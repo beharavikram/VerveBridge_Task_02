@@ -1,0 +1,175 @@
+import java.util.*;
+
+// Class representing a Food Item
+class FoodItem {
+    private String name;
+    private double price;
+    private double discount;
+    private List<String> reviews;
+    private double rating;
+
+    public FoodItem(String name, double price) {
+        this.name = name;
+        this.price = price;
+        this.discount = 0;
+        this.reviews = new ArrayList<>();
+        this.rating = 0.0;
+    }
+
+    // Getters and Setters
+    public String getName() { return name; }
+    public double getPrice() { return price; }
+    public double getDiscount() { return discount; }
+    public void setDiscount(double discount) { this.discount = discount; }
+    public void addReview(String review) { this.reviews.add(review); }
+    public List<String> getReviews() { return reviews; }
+    public double getRating() { return rating; }
+    public void setRating(double rating) { this.rating = rating; }
+
+    @Override
+    public String toString() {
+        return name + " - $" + price + " (Discount: $" + discount + ")";
+    }
+}
+
+// Class representing an Order
+class Order {
+    private static int orderCount = 0;
+    private int orderId;
+    private List<FoodItem> items;
+    private double totalPrice;
+
+    public Order(List<FoodItem> items) {
+        this.orderId = ++orderCount;
+        this.items = items;
+        this.totalPrice = calculateTotalPrice();
+    }
+
+    private double calculateTotalPrice() {
+        double total = 0;
+        for (FoodItem item : items) {
+            total += item.getPrice() - item.getDiscount();
+        }
+        return total;
+    }
+
+    // Getters
+    public int getOrderId() { return orderId; }
+    public List<FoodItem> getItems() { return items; }
+    public double getTotalPrice() { return totalPrice; }
+
+    @Override
+    public String toString() {
+        return "Order ID: " + orderId + " - Total Price: $" + totalPrice;
+    }
+}
+
+// Main class for Food Order Management Application
+public class FoodOrderManagement {
+    private static Map<String, FoodItem> menu = new HashMap<>();
+    private static List<Order> orderHistory = new ArrayList<>();
+
+    public static void main(String[] args) {
+        // Initialize sample food items
+        menu.put("Burger", new FoodItem("Burger", 5.99));
+        menu.put("Pizza", new FoodItem("Pizza", 8.99));
+        menu.put("Salad", new FoodItem("Salad", 4.99));
+
+        // Main menu for the application
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.println("1. View Menu");
+            System.out.println("2. Place Order");
+            System.out.println("3. View Order History");
+            System.out.println("4. Add Review and Rating");
+            System.out.println("5. Exit");
+            System.out.print("Choose an option: ");
+            int choice = scanner.nextInt();
+
+            switch (choice) {
+                case 1:
+                    viewMenu();
+                    break;
+                case 2:
+                    placeOrder(scanner);
+                    break;
+                case 3:
+                    viewOrderHistory();
+                    break;
+                case 4:
+                    addReviewAndRating(scanner);
+                    break;
+                case 5:
+                    System.out.println("Exiting...");
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    // Method to display the menu
+    private static void viewMenu() {
+        System.out.println("Menu:");
+        for (FoodItem item : menu.values()) {
+            System.out.println(item);
+        }
+    }
+
+    // Method to place an order
+    private static void placeOrder(Scanner scanner) {
+        List<FoodItem> items = new ArrayList<>();
+        while (true) {
+            System.out.print("Enter food item to order (type 'done' to finish): ");
+            String itemName = scanner.next();
+            if (itemName.equalsIgnoreCase("done")) {
+                break;
+            }
+            if (menu.containsKey(itemName)) {
+                items.add(menu.get(itemName));
+            } else {
+                System.out.println("Item not found. Please try again.");
+            }
+        }
+        if (!items.isEmpty()) {
+            Order order = new Order(items);
+            orderHistory.add(order);
+            System.out.println("Order placed successfully! Total price: $" + order.getTotalPrice());
+        } else {
+            System.out.println("No items ordered.");
+        }
+    }
+
+    // Method to view order history
+    private static void viewOrderHistory() {
+        if (orderHistory.isEmpty()) {
+            System.out.println("No orders placed yet.");
+        } else {
+            for (Order order : orderHistory) {
+                System.out.println(order);
+                for (FoodItem item : order.getItems()) {
+                    System.out.println(" - " + item.getName());
+                }
+            }
+        }
+    }
+
+    // Method to add review and rating
+    private static void addReviewAndRating(Scanner scanner) {
+        System.out.print("Enter food item to review: ");
+        String itemName = scanner.next();
+        if (menu.containsKey(itemName)) {
+            FoodItem item = menu.get(itemName);
+            System.out.print("Enter your review: ");
+            scanner.nextLine(); // consume newline
+            String review = scanner.nextLine();
+            item.addReview(review);
+            System.out.print("Enter your rating (0-5): ");
+            double rating = scanner.nextDouble();
+            item.setRating((item.getRating() + rating) / 2); // Simple average
+            System.out.println("Review and rating added successfully.");
+        } else {
+            System.out.println("Item not found. Please try again.");
+        }
+    }
+}
